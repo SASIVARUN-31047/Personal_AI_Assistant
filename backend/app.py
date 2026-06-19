@@ -14,7 +14,12 @@ def safe_ai_call(prompt):
     return ask_ai(prompt)
 
 
-app = Flask(__name__)
+import os
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
+template_dir = os.path.join(base_dir, 'templates')
+
+app = Flask(__name__, template_folder=template_dir)
 
 @app.route("/")
 def home():
