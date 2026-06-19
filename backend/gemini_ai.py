@@ -1,8 +1,6 @@
 import os
 from google import genai
 
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-
 MODEL_NAME = "models/gemini-flash-latest"
 
 # 🔒 YOUR CONTROL PROMPT (THIS IS THE BRAIN)
@@ -18,9 +16,23 @@ Rules you MUST follow:
 - Never say unnecessary greetings.
 """
 
+def get_client():
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return None
+    try:
+        return genai.Client(api_key=api_key)
+    except Exception as e:
+        print("Error initializing client:", e)
+        return None
+
 def ask_ai(prompt: str) -> str:
     if not prompt.strip():
         return "Please repeat the command."
+        
+    client = get_client()
+    if not client:
+        return "SERVER ERROR: The Gemini API Key is missing on Vercel. Please add it to Environment Variables and Redeploy!"
 
     try:
         response = client.models.generate_content(
