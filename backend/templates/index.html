@@ -110,6 +110,50 @@ html, body {
   opacity: 0.55;
   margin-right: 6px;
 }
+
+/* ===== PROCESS LOG (what's happening now) ===== */
+#proclog {
+  position: fixed;
+  top: 26px;
+  left: 26px;
+  z-index: 20;
+  width: 260px;
+  padding: 12px 14px;
+  border: 1px solid rgba(79,163,255,0.25);
+  border-radius: 10px;
+  background: rgba(79,163,255,0.04);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #7fb6ff;
+  pointer-events: none;
+}
+
+#proclog .plog-title {
+  font-size: 9px;
+  letter-spacing: 2px;
+  opacity: 0.5;
+  margin-bottom: 6px;
+}
+
+#proclog .plog-line {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(-3px);
+  animation: plogIn 0.25s ease forwards;
+}
+
+#proclog .plog-time { opacity: 0.45; }
+
+#proclog .plog-line.done .plog-dot { color: #4ad991; }
+#proclog .plog-line.active .plog-dot { color: #4fa3ff; }
+#proclog .plog-line.err .plog-dot,
+#proclog .plog-line.err { color: #ff7a85; }
+
+@keyframes plogIn {
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 
@@ -118,6 +162,11 @@ html, body {
 <div id="controls">
   <div class="activate-btn" onclick="startListening()">ACTIVATE</div>
   <div class="stop-btn" onclick="hardStop()">⏹</div>
+</div>
+
+<div id="proclog">
+  <div class="plog-title">PROCESS</div>
+  <div id="proclog-body"></div>
 </div>
 
 <div id="overlay">
@@ -191,6 +240,39 @@ for (let l = 0; l < layerCount; l++) {
 /* ================= STATE ================= */
 
 let isSpeaking = false;
+
+/* ================= PROCESS LOG ================= */
+
+function nowTime() {
+  const d = new Date();
+  return d.toTimeString().slice(0, 8);
+}
+
+let lastStep = null;
+
+function clearLog() {
+  document.getElementById("proclog-body").innerHTML = "";
+  lastStep = null;
+}
+
+function logStep(text, kind) {
+  // mark the previous active step as done
+  if (lastStep && !lastStep.classList.contains("err")) {
+    lastStep.classList.remove("active");
+    lastStep.classList.add("done");
+    const dot = lastStep.querySelector(".plog-dot");
+    if (dot) dot.textContent = "✓";
+  }
+
+  const line = document.createElement("div");
+  line.className = "plog-line " + (kind === "err" ? "err" : "active");
+  line.innerHTML =
+    '<span class="plog-dot">' + (kind === "err" ? "✕" : "▸") + '</span>' +
+    '<span class="plog-time">' + nowTime() + '</span>' +
+    '<span class="plog-text">' + text + '</span>';
+  document.getElementById("proclog-body").appendChild(line);
+  lastStep = line;
+}
 
 /* ================= ANIMATION ================= */
 
@@ -328,24 +410,45 @@ recognition.onresult = (event) => {
   }
 
   if (state === "listening") {
+    // ---- start a fresh process log for this command ----
+    clearLog();
+    logStep("Request received");
+
     // show what you said on screen
     document.getElementById("heard").innerHTML =
       '<span class="cap-label">YOU</span>' + text;
     document.getElementById("response").innerText = "";
 
     stopRecognition();
+
+    logStep("API request sent");
+    const t0 = performance.now();
+
     fetch("/command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ command: text })
     })
-    .then(res => res.json())
+    .then(res => {
+      logStep("Waiting for reply");
+      return res.json();
+    })
     .then(data => {
+      const ms = Math.round(performance.now() - t0);
+      logStep("Processed (" + ms + " ms)");
+
       // print JARVIS reply on screen
       document.getElementById("response").innerHTML =
         '<span class="cap-label">JARVIS</span>' + data.response;
       speak(data.response);
       state = "sleep";
+    })
+    .catch(() => {
+      logStep("Error — no response", "err");
+      document.getElementById("response").innerHTML =
+        '<span class="cap-label">JARVIS</span>Connection error. Try again.';
+      state = "sleep";
+      setTimeout(startRecognition, 600);
     });
   }
 };
