@@ -1,7 +1,9 @@
 import os
 from google import genai
-
-MODEL_NAME = "models/gemini-2.5-flash-lite"
+MODEL_CHAIN = [
+    "models/gemini-3.1-flash-lite", 
+    "models/gemini-2.5-flash-lite", 
+]
 
 SYSTEM_PROMPT = """
 You are Jarvis, my personal AI assistant.
@@ -34,20 +36,31 @@ def ask_ai(prompt: str) -> str:
     if not client:
         return "SERVER ERROR: The Gemini API Key is missing on Vercel. Please add it to Environment Variables and Redeploy!"
 
-    try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=[SYSTEM_PROMPT, prompt]
-        )
-        return response.text.strip()
+    last_error = None
 
-    except Exception as e:
-        err = str(e).lower()
-        print("GEMINI ERROR:", repr(e))
-        if "429" in err or "quota" in err or "rate" in err:
-            return "I'm getting too many requests right now. Wait a few seconds and try again."
-        if "timeout" in err or "deadline" in err:
-            return "That took too long to process. Please try again."
-        if "api key" in err or "permission" in err or "401" in err or "403" in err:
-            return "There's a problem with my API key. Check the Gemini key on Vercel."
-        return f"Error: {type(e).__name__}"
+    for model_name in MODEL_CHAIN:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=[SYSTEM_PROMPT, prompt]
+            )
+            print("OK via:", model_name)
+            return response.text.strip()
+
+        except Exception as e:
+            last_error = e
+            err = str(e).lower()
+            print(f"GEMINI ERROR ({model_name}):", repr(e))
+            continue
+
+    # All models failed — return a clear message based on the last error.
+    err = str(last_error).lower() if last_error else ""
+    if "429" in err or "quota" in err or "rate" in err:
+        return "I'm getting too many requests right now. Wait a few seconds and try again."
+    if "timeout" in err or "deadline" in err:
+        return "That took too long to process. Please try again."
+    if "api key" in err or "permission" in err or "401" in err or "403" in err:
+        return "There's a problem with my API key. Check the Gemini key on Vercel."
+    if "not found" in err or "404" in err or "not supported" in err:
+        return "The AI model name seems invalid. Check the model names in the code."
+    return f"Error: {type(last_error).__name__}"
