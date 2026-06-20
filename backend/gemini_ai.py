@@ -1,7 +1,7 @@
 import os
 from google import genai
 
-MODEL_NAME = "models/gemini-flash-latest"
+MODEL_NAME = "models/gemini-2.5-flash-lite"
 
 SYSTEM_PROMPT = """
 You are Jarvis, my personal AI assistant.
