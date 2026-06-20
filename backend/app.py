@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify, render_template
-from gemini_ai import ask_ai
+from gemini_ai import ask_ai, ask_ai_chat
 import time
 
 LAST_CALL = 0
-COOLDOWN = 12 
+COOLDOWN = 12
 
 def safe_ai_call(prompt):
     global LAST_CALL
@@ -13,24 +13,22 @@ def safe_ai_call(prompt):
     LAST_CALL = now
     return ask_ai(prompt)
 
-
 import os
-
 base_dir = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(base_dir, 'templates')
-
 app = Flask(__name__, template_folder=template_dir)
+
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+# ---- VOICE: single standalone command ----
 @app.route("/command", methods=["POST"])
 def command():
     data = request.get_json(force=True)
     cmd = data.get("command", "").strip().lower()
-
     print("Received:", cmd)
 
     if not cmd:
@@ -46,6 +44,19 @@ def command():
         "source": "gemini"
     })
 
+
+# ---- TEXT CHAT: full conversation with memory ----
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json(force=True)
+    messages = data.get("messages", [])
+    print("Chat turns received:", len(messages))
+
+    if not messages:
+        return jsonify({"response": "Please type a message."})
+
+    reply = ask_ai_chat(messages)
+    return jsonify({"response": reply, "source": "gemini"})
 
 
 if __name__ == "__main__":
