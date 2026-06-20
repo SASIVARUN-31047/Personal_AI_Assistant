@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>JARVIS ENERGY CORE</title>
 
 <style>
@@ -11,29 +12,38 @@ html, body {
   overflow: hidden;
   background: radial-gradient(circle at center, #02040a, #000);
   font-family: system-ui, Segoe UI, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  width: 100%;
+  height: 100%;
 }
+
+/* full-height that also works on mobile browser chrome */
+body { height: 100dvh; }
+
+canvas { display: block; }
 
 /* ================= CONTROLS ================= */
 
 #controls {
   position: fixed;
-  top: 26px;
-  right: 26px;
+  top: calc(env(safe-area-inset-top, 0px) + clamp(12px, 2.5vw, 26px));
+  right: calc(env(safe-area-inset-right, 0px) + clamp(12px, 2.5vw, 26px));
   display: flex;
-  gap: 16px;
+  gap: clamp(8px, 1.5vw, 16px);
   z-index: 20;
 }
 
 .activate-btn {
-  padding: 10px 26px;
+  padding: clamp(7px, 1.4vw, 10px) clamp(14px, 2.8vw, 26px);
   border-radius: 999px;
   border: 1px solid #4fa3ff;
   color: #4fa3ff;
-  font-size: 13px;
-  letter-spacing: 2px;
+  font-size: clamp(10px, 2.4vw, 13px);
+  letter-spacing: clamp(1px, 0.4vw, 2px);
   cursor: pointer;
   background: rgba(79, 163, 255, 0.08);
   transition: 0.3s;
+  white-space: nowrap;
 }
 
 .activate-btn:hover {
@@ -43,8 +53,8 @@ html, body {
 }
 
 .stop-btn {
-  width: 40px;
-  height: 40px;
+  width: clamp(34px, 8vw, 40px);
+  height: clamp(34px, 8vw, 40px);
   border-radius: 50%;
   border: 1px solid rgba(255,120,120,0.7);
   color: rgba(255,120,120,0.9);
@@ -54,6 +64,7 @@ html, body {
   cursor: pointer;
   background: rgba(255,120,120,0.05);
   transition: 0.25s;
+  flex: 0 0 auto;
 }
 
 .stop-btn:hover {
@@ -62,11 +73,11 @@ html, body {
   box-shadow: 0 0 18px rgba(255,120,120,0.8);
 }
 
-/* ================= STATUS ================= */
+/* ================= STATUS / CAPTIONS ================= */
 
 #overlay {
   position: absolute;
-  bottom: 28px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 3vw, 28px));
   width: 100%;
   text-align: center;
   color: #6fb8ff;
@@ -74,63 +85,56 @@ html, body {
 }
 
 #status {
-  font-size: 14px;
+  font-size: clamp(12px, 3vw, 14px);
   opacity: 0.85;
 }
 
-/* ===== CAPTIONS (read instead of listen) ===== */
 #caption {
-  margin-top: 12px;
-  max-width: 460px;
+  margin-top: clamp(8px, 2vw, 12px);
+  max-width: min(92vw, 460px);
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(4px, 1vw, 6px);
 }
 
 #heard, #response {
-  font-size: 14px;
+  font-size: clamp(12px, 3.2vw, 14px);
   line-height: 1.5;
-  padding: 0 18px;
+  padding: 0 clamp(12px, 4vw, 18px);
+  overflow-wrap: anywhere;
 }
 
-#heard {
-  color: #9fc4ff;
-  opacity: 0.9;
-}
-
-#response {
-  color: #cfe6ff;
-  opacity: 0.95;
-}
+#heard { color: #9fc4ff; opacity: 0.9; }
+#response { color: #cfe6ff; opacity: 0.95; }
 
 .cap-label {
-  font-size: 10px;
+  font-size: clamp(9px, 2.2vw, 10px);
   letter-spacing: 2px;
   opacity: 0.55;
   margin-right: 6px;
 }
 
-/* ===== PROCESS LOG (what's happening now) ===== */
+/* ===== PROCESS LOG ===== */
 #proclog {
   position: fixed;
-  top: 26px;
-  left: 26px;
+  top: calc(env(safe-area-inset-top, 0px) + clamp(12px, 2.5vw, 26px));
+  left: calc(env(safe-area-inset-left, 0px) + clamp(12px, 2.5vw, 26px));
   z-index: 20;
-  width: 260px;
-  padding: 12px 14px;
+  width: clamp(140px, 42vw, 260px);
+  padding: clamp(9px, 1.6vw, 12px) clamp(10px, 1.6vw, 14px);
   border: 1px solid rgba(79,163,255,0.25);
   border-radius: 10px;
   background: rgba(79,163,255,0.04);
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 11px;
-  line-height: 1.7;
+  font-size: clamp(9px, 2.1vw, 11px);
+  line-height: 1.65;
   color: #7fb6ff;
   pointer-events: none;
 }
 
 #proclog .plog-title {
-  font-size: 9px;
+  font-size: clamp(8px, 1.8vw, 9px);
   letter-spacing: 2px;
   opacity: 0.5;
   margin-bottom: 6px;
@@ -138,7 +142,7 @@ html, body {
 
 #proclog .plog-line {
   display: flex;
-  gap: 8px;
+  gap: clamp(5px, 1.2vw, 8px);
   opacity: 0;
   transform: translateY(-3px);
   animation: plogIn 0.25s ease forwards;
@@ -153,6 +157,11 @@ html, body {
 
 @keyframes plogIn {
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* hide timestamps on very narrow phones to save room */
+@media (max-width: 430px) {
+  #proclog .plog-time { display: none; }
 }
 </style>
 </head>
@@ -191,7 +200,7 @@ camera.position.z = 90;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 
 /* ================= ENERGY SPHERE ================= */
@@ -200,7 +209,7 @@ const group = new THREE.Group();
 scene.add(group);
 
 const layerCount = 3;
-const particleCount = 2000;
+const particleCount = (innerWidth < 600) ? 1200 : 2000;
 
 let layers = [];
 let baseSpeed = 0.001;
@@ -256,7 +265,6 @@ function clearLog() {
 }
 
 function logStep(text, kind) {
-  // mark the previous active step as done
   if (lastStep && !lastStep.classList.contains("err")) {
     lastStep.classList.remove("active");
     lastStep.classList.add("done");
@@ -289,11 +297,25 @@ function animate(t) {
 }
 animate(0);
 
-window.addEventListener("resize", () => {
-  camera.aspect = innerWidth / innerHeight;
+/* ============ RESPONSIVE / AUTO-SCALE ============ */
+
+function fitView() {
+  const w = innerWidth, h = innerHeight;
+  const aspect = w / h;
+  camera.aspect = aspect;
+
+  // Smoothly pull the camera back as the screen gets taller/narrower
+  // (portrait phones) so the globe stays fully framed and is never
+  // covered by the text panels. Landscape/desktop keep the close view.
+  camera.position.z = aspect >= 1 ? 90 : 90 + (1 - aspect) * 60;
+
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+}
+fitView();
+window.addEventListener("resize", fitView);
+window.addEventListener("orientationchange", () => setTimeout(fitView, 150));
 
 /* ================= VOICE ================= */
 
@@ -348,7 +370,6 @@ function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
 msg.lang = "en-IN";
 
-// Try to pick a MALE voice
 const voices = speechSynthesis.getVoices();
 
 const maleVoice = voices.find(v =>
@@ -362,9 +383,8 @@ if (maleVoice) {
   msg.voice = maleVoice;
 }
 
-// Make it sound more masculine
-msg.pitch = 0.85;   // lower = deeper voice
-msg.rate  = 0.95;   // slightly slower
+msg.pitch = 0.85;
+msg.rate  = 0.95;
 msg.volume = 1.0;
 
   msg.onend = () => {
@@ -410,11 +430,9 @@ recognition.onresult = (event) => {
   }
 
   if (state === "listening") {
-    // ---- start a fresh process log for this command ----
     clearLog();
     logStep("Request received");
 
-    // show what you said on screen
     document.getElementById("heard").innerHTML =
       '<span class="cap-label">YOU</span>' + text;
     document.getElementById("response").innerText = "";
@@ -437,7 +455,6 @@ recognition.onresult = (event) => {
       const ms = Math.round(performance.now() - t0);
       logStep("Processed (" + ms + " ms)");
 
-      // print JARVIS reply on screen
       document.getElementById("response").innerHTML =
         '<span class="cap-label">JARVIS</span>' + data.response;
       speak(data.response);
