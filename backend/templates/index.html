@@ -259,10 +259,77 @@ canvas { display: block; }
   }
   #chat-toggle { bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); right: 14px; }
 }
+
+/* ================= iOS INSTALL BANNER ================= */
+#ios-banner {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 999;
+  background: rgba(6,11,22,0.97);
+  border-top: 1px solid rgba(79,163,255,0.35);
+  padding: 18px 20px 28px;
+  text-align: center;
+  backdrop-filter: blur(14px);
+  animation: slideUp 0.4s ease;
+}
+#ios-banner.show { display: block; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+#ios-banner p {
+  color: #9fc4ff; font-size: 14px; margin: 0 0 8px; line-height: 1.6;
+}
+#ios-banner .ios-steps {
+  color: #cfe6ff; font-size: 13px; opacity: 0.85; margin: 8px 0 14px;
+}
+#ios-banner .ios-close {
+  position: absolute; top: 12px; right: 16px;
+  color: #4fa3ff; font-size: 20px; cursor: pointer; opacity: 0.7;
+}
+#ios-banner .ios-close:hover { opacity: 1; }
+
+/* ================= DESKTOP INSTALL TOAST ================= */
+#desktop-toast {
+  display: none;
+  position: fixed;
+  top: 70px; right: 20px;
+  z-index: 999;
+  background: rgba(6,11,22,0.95);
+  border: 1px solid rgba(74,217,145,0.4);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #cfe6ff; font-size: 13px;
+  max-width: 260px; line-height: 1.6;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease;
+}
+#desktop-toast.show { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+#desktop-toast .dt-close {
+  float: right; cursor: pointer; color: #4fa3ff; font-size: 16px; margin-left: 10px;
+}
 </style>
 </head>
 
 <body>
+<!-- iOS Install Banner -->
+<div id="ios-banner">
+  <span class="ios-close" onclick="document.getElementById('ios-banner').classList.remove('show')">✕</span>
+  <p>📱 <strong>Install Jarvis on your iPhone</strong></p>
+  <div class="ios-steps">
+    1. Tap the <strong>Share</strong> button (⎙) at the bottom of Safari<br>
+    2. Scroll down and tap <strong>"Add to Home Screen"</strong><br>
+    3. Tap <strong>"Add"</strong> — Jarvis icon appears on your home screen!
+  </div>
+</div>
+
+<!-- Desktop Install Toast -->
+<div id="desktop-toast">
+  <span class="dt-close" onclick="document.getElementById('desktop-toast').classList.remove('show')">✕</span>
+  💻 <strong>Install on Desktop</strong><br>
+  Click the install icon (⊕) in your browser's address bar, or use the INSTALL button above.
+</div>
+
 
 <div id="controls">
   <div class="install-btn" id="installBtn" onclick="installApp()">&#8964; INSTALL</div>
