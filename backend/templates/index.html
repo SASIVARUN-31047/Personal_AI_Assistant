@@ -65,6 +65,24 @@ canvas { display: block; }
   background: rgba(255,120,120,0.9); color: #000;
   box-shadow: 0 0 18px rgba(255,120,120,0.8);
 }
+/* ================= INSTALL BUTTON ================= */
+.install-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(7px, 1.4vw, 10px) clamp(14px, 2.8vw, 22px);
+  border-radius: 999px;
+  border: 1px solid #4ad991;
+  color: #4ad991;
+  font-size: clamp(10px, 2.4vw, 12px);
+  letter-spacing: clamp(1px, 0.4vw, 2px);
+  cursor: pointer;
+  background: rgba(74, 217, 145, 0.08);
+  transition: 0.3s;
+  white-space: nowrap;
+}
+.install-btn:hover { background: #4ad991; color: #000; box-shadow: 0 0 22px rgba(74,217,145,0.7); }
+.install-btn.visible { display: flex; }
 
 /* ================= STATUS / CAPTIONS ================= */
 #overlay {
@@ -247,6 +265,7 @@ canvas { display: block; }
 <body>
 
 <div id="controls">
+  <div class="install-btn" id="installBtn" onclick="installApp()">&#8964; INSTALL</div>
   <div class="activate-btn" onclick="startListening()">ACTIVATE</div>
   <div class="stop-btn" onclick="hardStop()">⏹</div>
 </div>
@@ -543,6 +562,29 @@ inputEl.addEventListener("input", () => {
 </script>
 
 
+
+<script>
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').classList.add('visible');
+});
+function installApp() {
+  if (!deferredPrompt) {
+    alert('To install: tap the browser menu (⋮) → Add to Home Screen');
+    return;
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('installBtn').classList.remove('visible');
+  });
+}
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').classList.remove('visible');
+});
+</script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
