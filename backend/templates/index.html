@@ -8,7 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Jarvis">
-<link rel="manifest" href="/static/manifest.json">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
 <title>JARVIS</title>
 
 <style>
@@ -67,7 +69,7 @@ canvas { display: block; }
 }
 /* ================= INSTALL BUTTON ================= */
 .install-btn {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 6px;
   padding: clamp(7px, 1.4vw, 10px) clamp(14px, 2.8vw, 22px);
@@ -82,7 +84,7 @@ canvas { display: block; }
   white-space: nowrap;
 }
 .install-btn:hover { background: #4ad991; color: #000; box-shadow: 0 0 22px rgba(74,217,145,0.7); }
-.install-btn.visible { display: flex; }
+.install-btn.installed { display: none !important; }
 
 /* ================= STATUS / CAPTIONS ================= */
 #overlay {
@@ -632,24 +634,46 @@ inputEl.addEventListener("input", () => {
 
 <script>
 let deferredPrompt = null;
+const installBtn = document.getElementById('installBtn');
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+if (isStandalone) {
+  if (installBtn) installBtn.classList.add('installed');
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById('installBtn').classList.add('visible');
+  if (installBtn && !isStandalone) installBtn.style.display = 'flex';
 });
+
 function installApp() {
-  if (!deferredPrompt) {
-    alert('To install: tap the browser menu (⋮) → Add to Home Screen');
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        if (installBtn) installBtn.classList.add('installed');
+      }
+      deferredPrompt = null;
+    });
     return;
   }
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(() => {
-    deferredPrompt = null;
-    document.getElementById('installBtn').classList.remove('visible');
-  });
+
+  // Cross-device fallbacks if browser doesn't support beforeinstallprompt or on iOS / desktop
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  if (isIOS) {
+    const iosBanner = document.getElementById('ios-banner');
+    if (iosBanner) iosBanner.classList.add('show');
+  } else {
+    // Show instruction alert or toast
+    alert("To install Jarvis App:\n\n1. In Chrome/Edge: Click the 'Install' icon (⊕ or ⬇) in your address bar OR click the 3-dots menu (⋮) -> 'Install App' / 'Add to Home Screen'.\n2. In Safari: Tap Share -> 'Add to Home Screen'.");
+  }
 }
+
 window.addEventListener('appinstalled', () => {
-  document.getElementById('installBtn').classList.remove('visible');
+  if (installBtn) installBtn.classList.add('installed');
+  deferredPrompt = null;
 });
 </script>
 <script>

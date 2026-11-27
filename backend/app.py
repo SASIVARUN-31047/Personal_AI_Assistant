@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from gemini_ai import ask_ai, ask_ai_chat
 import time
 
@@ -16,12 +16,24 @@ def safe_ai_call(prompt):
 import os
 base_dir = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(base_dir, 'templates')
-app = Flask(__name__, template_folder=template_dir)
+static_dir = os.path.join(base_dir, 'static')
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir, static_url_path='/static')
 
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+
+@app.route("/manifest.json")
+def manifest():
+    return send_from_directory(static_dir, "manifest.json", mimetype="application/manifest+json")
+
+
+@app.route("/sw.js")
+def service_worker():
+    return send_from_directory(static_dir, "sw.js", mimetype="application/javascript")
+
 
 
 # ---- VOICE: single standalone command ----
